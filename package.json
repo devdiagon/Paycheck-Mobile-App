@@ -1,0 +1,24 @@
+{
+  "name": "saint_roche_atomic_design",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "commit": "git-cz",
+    "commit-numbers": "git-cz --scope numbers"
+  },
+  "keywords": [],
+  "author": "",
+  "devDependencies": {
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "git-cz": "^4.9.0"
+  },
+  "license": "ISC",
+  "packageManager": "pnpm@10.15.0",
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
