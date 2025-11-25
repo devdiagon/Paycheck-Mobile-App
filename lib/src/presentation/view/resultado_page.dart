@@ -1,9 +1,11 @@
+// EN resultado_page.dart - CORREGIR:
 import 'package:flutter/material.dart';
-import 'package:modelview/src/domain/entities/resultado_operario.dart';
+import '../../domain/entities/resultado_operario.dart'; // Ruta corregida
 
 class ResultadoPage extends StatelessWidget {
-  ResultadoOperario resultado;
-  ResultadoPage({super.key,required this.resultado});
+  final ResultadoOperario resultado; // Agregar 'final'
+
+  ResultadoPage({super.key, required this.resultado});
 
   @override
   Widget build(BuildContext context) {

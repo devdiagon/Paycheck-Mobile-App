@@ -1,7 +1,6 @@
 import '../entities/operario.dart';
 import '../entities/resultado_operario.dart';
 
-// Lógica de programación
 
 class CalcularAumento{
   ResultadoOperario ejecutar(Operario op){
@@ -13,8 +12,8 @@ class CalcularAumento{
         aumento = op.sueldo * 0.05;
       }
     }
-    
     final sueldoFinal = op.sueldo + aumento;
+
 
     return ResultadoOperario(aumento: aumento, sueldoFinal: sueldoFinal);
   }
