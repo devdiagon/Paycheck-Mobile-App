@@ -1,129 +1,63 @@
-// EN operario_viewmodel.dart - ACTUALIZADO:
 import 'package:flutter/material.dart';
+
 import '../../domain/entities/operario.dart';
-import '../../domain/entities/aumento_record.dart';
 import '../../domain/entities/resultado_operario.dart';
 import '../../domain/usecases/calcular_aumento.dart';
 
 class OperarioViewModel extends ChangeNotifier {
+  final CalcularAumento _useCase;
+  OperarioViewModel(this._useCase);
   final List<Operario> _operarios = [];
-  final CalcularAumento calcularAumento;
-
-  OperarioViewModel(this.calcularAumento);
-
   List<Operario> get operarios => List.unmodifiable(_operarios);
 
-  Operario? getById(String id) {
-    for (var o in _operarios) {
-      if (o.id == id) return o;
-    }
-    return null;
-  }
 
-  /// Crear operario con primer registro de aumento
   Operario crearOperario({
     required String nombre,
     required double sueldo,
     required int antiguedad,
   }) {
-    final id = DateTime.now().microsecondsSinceEpoch.toString();
+    // ID basado en la fecha y hora
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
+
+    // Crear operario inicial (temporal)
     final op = Operario(
       id: id,
       nombre: nombre,
       sueldo: sueldo,
       antiguedad: antiguedad,
+      result: ResultadoOperario(
+        aumento: 0,
+        sueldoFinal: sueldo,
+        salarioAnterior: sueldo,
+        fecha: DateTime.now(),
+        porcentaje: 0,
+      ),
     );
 
-    // Crear primer registro de aumento (sueldo inicial)
-    final primerRegistro = AumentoRecord(
-      salarioAnterior: 0.0, // No tenía sueldo anterior
-      salarioNuevo: sueldo,
-      antiguedadAnterior: 0, // No tenía antigüedad anterior
-      antiguedadNueva: antiguedad,
-      fecha: DateTime.now(),
-      aumento: sueldo, // El aumento es el sueldo completo (de 0 a sueldo)
-    );
+    // Calcular su primer aumento
+    final resultado = _useCase.ejecutar(op);
 
-    op.historial.add(primerRegistro);
+    // Actualizar operario con el resultado del aumento
+    op.sueldo = resultado.sueldoFinal;
+    op.result = resultado;
+
+    // Guardarlo en la lista
     _operarios.add(op);
+
     notifyListeners();
+
     return op;
   }
 
-  /// Registrar aumento manualmente calculando el aumento real
-  AumentoRecord registrarAumento(
-      String operarioId, {
-        required double nuevoSueldo,
-        required int nuevaAntiguedad,
-      }) {
-    final op = getById(operarioId);
-    if (op == null) throw Exception('Operario no encontrado');
-
-    // Calcular el aumento según las reglas de negocio
-    final resultadoAumento = calcularAumento.ejecutar(op);
-    final aumentoCalculado = resultadoAumento.aumento;
-
-    // El aumento real es la diferencia entre el nuevo sueldo y el actual
-    final aumentoReal = nuevoSueldo - op.sueldo;
-
-    final record = AumentoRecord(
-      salarioAnterior: op.sueldo,
-      salarioNuevo: nuevoSueldo,
-      antiguedadAnterior: op.antiguedad,
-      antiguedadNueva: nuevaAntiguedad,
-      fecha: DateTime.now(),
-      aumento: aumentoReal, // Usar el aumento real calculado
-    );
-
-    // Guardar historial
-    op.historial.add(record);
-
-    // Actualizar valores del operario
-    op.sueldo = nuevoSueldo;
-    op.antiguedad = nuevaAntiguedad;
-
-    notifyListeners();
-    return record;
+  /// ---------------------------------------------------------
+  /// OBTENER OPERARIO POR ID (para la pantalla resultado)
+  /// ---------------------------------------------------------
+  Operario? getById(String id) {
+    try {
+      return _operarios.firstWhere((e) => e.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
-  /// Método alternativo que aplica el aumento calculado automáticamente
-  AumentoRecord aplicarAumentoCalculado(
-      String operarioId, {
-        int? nuevaAntiguedad,
-      }) {
-    final op = getById(operarioId);
-    if (op == null) throw Exception('Operario no encontrado');
-
-    // Calcular el aumento usando el use case
-    final resultado = calcularAumento.ejecutar(op);
-
-    final nuevoSueldo = op.sueldo + resultado.aumento;
-    final antiguedadFinal = nuevaAntiguedad ?? op.antiguedad;
-
-    final record = AumentoRecord(
-      salarioAnterior: op.sueldo,
-      salarioNuevo: nuevoSueldo,
-      antiguedadAnterior: op.antiguedad,
-      antiguedadNueva: antiguedadFinal,
-      fecha: DateTime.now(),
-      aumento: resultado.aumento, // Usar el aumento calculado
-    );
-
-    // Guardar historial
-    op.historial.add(record);
-
-    // Actualizar valores del operario
-    op.sueldo = nuevoSueldo;
-    op.antiguedad = antiguedadFinal;
-
-    notifyListeners();
-    return record;
-  }
-
-  // Método para solo calcular aumento sin aplicarlo
-  ResultadoOperario calcularAumentoOperario(String operarioId) {
-    final op = getById(operarioId);
-    if (op == null) throw Exception('Operario no encontrado');
-    return calcularAumento.ejecutar(op);
-  }
 }

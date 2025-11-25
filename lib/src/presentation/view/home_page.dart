@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../domain/entities/operario.dart' as ent;
 import '../viewmodels/operario_viewmodel.dart';
 import '../routes/app_routes.dart';
+import '../widgets/error_mesage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -29,21 +29,27 @@ class _HomePageState extends State<HomePage> {
       setState(() => _errMsg = 'Ingrese el nombre del operario');
       return;
     }
-    if (sueldo == null) {
+    if (sueldo == null || sueldo <= 0){
       setState(() => _errMsg = 'Ingrese un sueldo válido');
       return;
     }
 
     final vm = Provider.of<OperarioViewModel>(context, listen: false);
-    final op = vm.crearOperario(nombre: nombre, sueldo: sueldo, antiguedad: _selectedYear);
+    final op = vm.crearOperario(
+        nombre: nombre,
+        sueldo: sueldo,
+        antiguedad: _selectedYear
+    );
 
     // Limpiar formulario
     _nombreController.clear();
     _sueldoController.clear();
+    _errMsg = "";
     setState(() { _selectedYear = 1; });
 
-    // Ir a la página de detalle del operario creado
-    Navigator.pushNamed(context, AppRoutes.operarioDetail, arguments: op.id);
+
+    // CORRECTO: Pasar el ID del operario
+    Navigator.pushNamed(context, AppRoutes.resultado, arguments: op.id);
   }
 
   @override
@@ -63,12 +69,16 @@ class _HomePageState extends State<HomePage> {
               decoration: const InputDecoration(labelText: 'Nombre del operario', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 8),
+
             TextField(
               controller: _sueldoController,
               decoration: const InputDecoration(labelText: 'Sueldo inicial', border: OutlineInputBorder(), prefixIcon: Icon(Icons.attach_money)),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),
+            ErrorMessage(errorText: _errMsg,),
+            const SizedBox(height: 8),
+
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -90,9 +100,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-
-            const SizedBox(height: 8),
-            if (_errMsg.isNotEmpty) Text(_errMsg, style: const TextStyle(color: Colors.red)),
 
             SizedBox(
               width: double.infinity,
@@ -118,7 +125,7 @@ class _HomePageState extends State<HomePage> {
                     leading: CircleAvatar(child: Text(inicial)),
                     title: Text(op.nombre),
                     subtitle: Text('Sueldo: \$${op.sueldo.toStringAsFixed(2)} • Antigüedad: ${op.antiguedad} años'),
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.operarioDetail, arguments: op.id),
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.resultado, arguments: op.id),
                   );
                 },
               ),

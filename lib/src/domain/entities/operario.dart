@@ -1,5 +1,4 @@
-// EN operario.dart - CORREGIR:
-import 'aumento_record.dart';
+import 'package:modelview/src/domain/entities/resultado_operario.dart';
 
 class Operario {
   final String id;
@@ -7,13 +6,13 @@ class Operario {
 
   double sueldo;
   int antiguedad;
-
-  List<AumentoRecord> historial; // Quitar 'final'
+  ResultadoOperario result;
 
   Operario({
     required this.id,
     required this.nombre,
     required this.sueldo,
     required this.antiguedad,
-  }) : historial = []; // Inicializar correctamente
+    required this.result,
+  });
 }
