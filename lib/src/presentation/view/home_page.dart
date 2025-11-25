@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:modelview/src/domain/entities/operario.dart';
-import 'package:modelview/src/domain/entities/resultado_operario.dart';
-import 'package:modelview/src/domain/usecases/calcular_aumento.dart';
-import 'package:modelview/src/presentation/widgets/error_mesage.dart';
 import 'package:provider/provider.dart';
-
 import '../viewmodels/operario_viewmodel.dart';
 import '../routes/app_routes.dart';
+import '../widgets/error_mesage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,101 +12,122 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _sueldoController = TextEditingController();
-  int? _selectedYear = 1;
+  int _selectedYear = 1;
   String _errMsg = "";
 
-  void _calcular() {
+  void _crearOperario(BuildContext context) {
     setState(() {
       _errMsg = "";
     });
+
+    final nombre = _nombreController.text.trim();
     final sueldo = double.tryParse(_sueldoController.text);
 
-    if (sueldo == null) {
-      setState(() {
-        _errMsg = "Ingrese solo números válidos";
-      });
+    if (nombre.isEmpty) {
+      setState(() => _errMsg = 'Ingrese el nombre del operario');
+      return;
+    }
+    if (sueldo == null || sueldo <= 0){
+      setState(() => _errMsg = 'Ingrese un sueldo válido');
       return;
     }
 
-    final operario = Operario(
-      sueldo: sueldo!,
-      antiguedad: _selectedYear!,
+    final vm = Provider.of<OperarioViewModel>(context, listen: false);
+    final op = vm.crearOperario(
+        nombre: nombre,
+        sueldo: sueldo,
+        antiguedad: _selectedYear
     );
 
-    final calculadora = CalcularAumento();
-    final ResultadoOperario resultado = calculadora.ejecutar(operario);
+    // Limpiar formulario
+    _nombreController.clear();
+    _sueldoController.clear();
+    _errMsg = "";
+    setState(() { _selectedYear = 1; });
 
-    Navigator.pushNamed(context, AppRoutes.resultado, arguments: resultado,);
+
+    // CORRECTO: Pasar el ID del operario
+    Navigator.pushNamed(context, AppRoutes.resultado, arguments: op.id);
   }
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<OperarioViewModel>(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Calculadora de Sueldo'),
-      ),
+      appBar: AppBar(title: const Text('Gestión de Operarios')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Campo para ingresar el sueldo
+            // Formulario crear operario
+            TextField(
+              controller: _nombreController,
+              decoration: const InputDecoration(labelText: 'Nombre del operario', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 8),
+
             TextField(
               controller: _sueldoController,
-              decoration: const InputDecoration(
-                labelText: 'Ingresa el valor del sueldo',
-                hintText: 'Ej: 1500.00',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.attach_money),
-              ),
+              decoration: const InputDecoration(labelText: 'Sueldo inicial', border: OutlineInputBorder(), prefixIcon: Icon(Icons.attach_money)),
               keyboardType: TextInputType.number,
             ),
-
-            const SizedBox(height: 24),
-
+            const SizedBox(height: 8),
             ErrorMessage(errorText: _errMsg,),
+            const SizedBox(height: 8),
 
-            // Título para los radio buttons
-            const Text(
-              'Selecciona el número de años:',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Antigüedad (años): $_selectedYear',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                Slider(
+                  value: _selectedYear.toDouble(),
+                  min: 1,
+                  max: 10,
+                  divisions: 9,
+                  label: '$_selectedYear',
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedYear = value.toInt();
+                    });
+                  },
+                ),
+              ],
+            ),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(onPressed: () => _crearOperario(context), child: const Text('Crear operario')),
             ),
 
             const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+            const Text('Operarios disponibles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
 
-            // Radio buttons para los años (1-10)
+            // Lista de operarios
             Expanded(
-              child: ListView.builder(
-                itemCount: 10,
+              child: vm.operarios.isEmpty
+                  ? const Center(child: Text('No hay operarios aún'))
+                  : ListView.builder(
+                itemCount: vm.operarios.length,
                 itemBuilder: (context, index) {
-                  final year = index + 1;
-                  return RadioListTile<int>(
-                    title: Text('$year año${year > 1 ? 's' : ''}'),
-                    value: year,
-                    groupValue: _selectedYear,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedYear = value;
-                      });
-                    },
+                  final op = vm.operarios[index];
+                  final inicial = (op.nombre.isNotEmpty) ? op.nombre[0].toUpperCase() : '?';
+                  return ListTile(
+                    leading: CircleAvatar(child: Text(inicial)),
+                    title: Text(op.nombre),
+                    subtitle: Text('Sueldo: \$${op.sueldo.toStringAsFixed(2)} • Antigüedad: ${op.antiguedad} años'),
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.resultado, arguments: op.id),
                   );
                 },
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Botón para calcular
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _calcular,
-
-                child: const Text('Calcular'),
               ),
             ),
           ],

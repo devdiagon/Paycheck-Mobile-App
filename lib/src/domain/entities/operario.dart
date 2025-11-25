@@ -1,6 +1,18 @@
-class Operario {
-  final double sueldo;
-  final int antiguedad;
+import 'package:modelview/src/domain/entities/resultado_operario.dart';
 
-  Operario({ required this.sueldo, required this.antiguedad });
+class Operario {
+  final String id;
+  final String nombre;
+
+  double sueldo;
+  int antiguedad;
+  ResultadoOperario result;
+
+  Operario({
+    required this.id,
+    required this.nombre,
+    required this.sueldo,
+    required this.antiguedad,
+    required this.result,
+  });
 }

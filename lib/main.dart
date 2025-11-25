@@ -7,12 +7,7 @@ import 'src/presentation/viewmodels/operario_viewmodel.dart';
 import 'src/presentation/routes/app_routes.dart';
 
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => OperarioViewModel(CalcularAumento()),
-      child: const MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -20,14 +15,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Aumento Operario',
-      debugShowCheckedModeBanner: false,
-
-      theme: getGeneralTheme(Brightness.light),
-
-      initialRoute: AppRoutes.home,
-      routes: AppRoutes.routes,
+    return ChangeNotifierProvider(
+      create: (context) => OperarioViewModel(CalcularAumento()),
+      child: MaterialApp(
+        title: 'Aumento Operario',
+        debugShowCheckedModeBanner: false,
+        theme: getGeneralTheme(Brightness.light),
+        initialRoute: AppRoutes.home,
+        routes: AppRoutes.routes,
+      ),
     );
   }
 }
