@@ -1,4 +1,4 @@
-# 📱 Paycheck Mobile App
+# Paycheck Mobile App
 **Gestión de Operarios, Aumentos y Registros – Flutter + Provider + Clean Architecture**
 
 Este proyecto es una aplicación móvil desarrollada en **Flutter**, enfocada en gestionar **operarios**, calcular automáticamente sus aumentos salariales según su antigüedad y mantener un historial de registros.
@@ -12,12 +12,9 @@ Este proyecto es una aplicación móvil desarrollada en **Flutter**, enfocada en
 
 ---
 
-
----
-
 ## Lógica del Negocio
 
-### ✔ Cálculo de aumento (UseCase `CalcularAumento`)
+### Cálculo de aumento (UseCase `CalcularAumento`)
 El aumento se calcula según:
 - Sueldo actual
 - Años de antigüedad del operario
@@ -48,9 +45,9 @@ Formulario donde puedes ingresar:
 - Fecha de ingreso
 
 Al guardar:
-✔ Se crea el operario  
-✔ Se registra automáticamente su primer `AumentoRecord`  
-✔ Se calcula el aumento inicial
+- Se crea el operario  
+- Se registra automáticamente su primer `AumentoRecord`  
+- Se calcula el aumento inicial
 
 ---
 
@@ -58,9 +55,9 @@ Al guardar:
 El usuario puede:
 - Modificar la antigüedad
 - Registrar nuevo aumento  
-  ✔ Se calcula el incremento  
-  ✔ Se actualiza el salario  
-  ✔ Se agrega un registro histórico
+  - Se calcula el incremento  
+  - Se actualiza el salario  
+  - Se agrega un registro histórico
 
 ---
 
