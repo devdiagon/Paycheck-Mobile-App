@@ -34,14 +34,12 @@ class OperarioViewModel extends ChangeNotifier {
       ),
     );
 
-    // Calcular su primer aumento
     final resultado = _useCase.ejecutar(op);
 
     // Actualizar operario con el resultado del aumento
     op.sueldo = resultado.sueldoFinal;
     op.result = resultado;
 
-    // Guardarlo en la lista
     _operarios.add(op);
 
     notifyListeners();
@@ -49,9 +47,6 @@ class OperarioViewModel extends ChangeNotifier {
     return op;
   }
 
-  /// ---------------------------------------------------------
-  /// OBTENER OPERARIO POR ID (para la pantalla resultado)
-  /// ---------------------------------------------------------
   Operario? getById(String id) {
     try {
       return _operarios.firstWhere((e) => e.id == id);
