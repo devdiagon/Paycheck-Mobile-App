@@ -21,20 +21,27 @@ class _HomePageState extends State<HomePage> {
   String _errMsg = "";
 
   void _crearOperario(BuildContext context) {
+    // Quitar mensaje de error
     setState(() => _errMsg = "");
 
+    // Obtener nombre y sueldo
     final nombre = _nombreController.text.trim();
     final sueldo = double.tryParse(_sueldoController.text);
 
+    // Revisar que el nombre sea válido
     if (nombre.isEmpty) {
       setState(() => _errMsg = 'Ingrese el nombre del operario');
       return;
     }
+
+    // Revisar que el sueldo sea válido
     if (sueldo == null || sueldo <= 0){
       setState(() => _errMsg = 'Ingrese un sueldo válido');
       return;
     }
 
+    // Datos válidos: CHECK
+    // Crear un nuevo operario
     final vmOp = Provider.of<OperarioViewModel>(context, listen: false);
     final op = vmOp.crearOperario(
         nombre: nombre,
@@ -42,9 +49,14 @@ class _HomePageState extends State<HomePage> {
         antiguedad: _selectedYear
     );
 
+    // Colocar los controles y datos a default
     _limpiarFormulario();
 
-    // CORRECTO: Pasar el ID del operario
+    // Habilitar el botón de PDF cuando se ha agregado al menos un operario
+    final vmPdf = Provider.of<ReporteViewModel>(context, listen: false);
+    vmPdf.updateCanGenerate(vmOp.operarios.isNotEmpty);
+
+    // Pasar el ID del operario y los datos calculados a la pantalla de resultado
     Navigator.pushNamed(context, AppRoutes.resultado, arguments: op.id);
   }
 
@@ -88,18 +100,11 @@ class _HomePageState extends State<HomePage> {
               onYearChanged: (value) => setState(() => _selectedYear = value),
               onCrearOperario: () => _crearOperario(context),
             ),
+
             const SizedBox(height: 16),
-
-            Center(
-              child: SwitchListTile(
-                title: const Text("Activar botón de reporte"),
-                value: vmPdf.canGenerateReport,
-                onChanged: vmPdf.updateCanGenerate,
-              ),
-            ),
-
             const Divider(),
             const SizedBox(height: 8),
+
             const Text('Operarios disponibles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
 
