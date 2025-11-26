@@ -1,6 +1,8 @@
-class Reporte {
-  final String title;
-  final String content;
+import 'operario.dart';
 
-  Reporte({required this.title, required this.content});
+class Reporte {
+  final String titulo;
+  final List<Operario> datosOperarios;
+
+  Reporte({required this.titulo, required this.datosOperarios});
 }

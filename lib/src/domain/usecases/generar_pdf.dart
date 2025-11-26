@@ -7,13 +7,13 @@ import 'package:permission_handler/permission_handler.dart';
 import '../entities/reporte.dart';
 
 class GenerarPdf {
-  Future<String> call(Reporte data) async {
+  Future<String> call(Reporte contenido) async {
     final pdf = pw.Document();
 
     pdf.addPage(
       pw.Page(
         build: (context) => pw.Center(
-          child: pw.Text(data.title),
+          child: pw.Text(contenido.titulo),
         ),
       ),
     );

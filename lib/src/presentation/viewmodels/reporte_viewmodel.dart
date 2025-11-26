@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import '../../domain/usecases/generar_pdf.dart';
 import '../../domain/entities/reporte.dart';
+import '../../domain/entities/operario.dart';
 
 class ReporteViewModel extends ChangeNotifier {
-  final GenerarPdf _useCase;
+  final GenerarPdf useCase;
 
-  bool _canGenerateReport = false;
-  bool get canGenerateReport => _canGenerateReport;
+  ReporteViewModel(this.useCase);
 
-  ReporteViewModel(this._useCase);
-
-  void updateCanGenerate(bool value) {
-    _canGenerateReport = value;
+  bool _puedeGenerarPdf = false;
+  bool get puedeGenerarReporte => _puedeGenerarPdf;
+  
+  void actualizarPuedeGenerar(bool value) {
+    _puedeGenerarPdf = value;
     notifyListeners();
   }
 
-  Future<void> generateReport() async {
-    final report = Reporte(
-      title: "Reporte del día",
-      content: "Contenido del reporte...",
+  Future<void> generarReporte(List<Operario> operarios) async {
+    final reporte = Reporte(
+      titulo: "Reporte de Operarios Registrados",
+      datosOperarios: operarios,
     );
 
-    await _useCase(report);
+    await useCase(reporte);
   }
 }

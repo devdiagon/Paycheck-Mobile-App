@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
 
     // Habilitar el botón de PDF cuando se ha agregado al menos un operario
     final vmPdf = Provider.of<ReporteViewModel>(context, listen: false);
-    vmPdf.updateCanGenerate(vmOp.operarios.isNotEmpty);
+    vmPdf.actualizarPuedeGenerar(vmOp.operarios.isNotEmpty);
 
     // Pasar el ID del operario y los datos calculados a la pantalla de resultado
     Navigator.pushNamed(context, AppRoutes.resultado, arguments: op.id);
@@ -71,7 +71,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _generarReporte(BuildContext context, ReporteViewModel vmPdf) async {
-    await vmPdf.generateReport();
+    // Obtener operarios registrados
+    final vmOp = Provider.of<OperarioViewModel>(context, listen: false);
+    await vmPdf.generarReporte(vmOp.operarios);
+
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("PDF generado")),
@@ -116,7 +119,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       floatingActionButton: ReportFab(
-        enabled: vmPdf.canGenerateReport,
+        enabled: vmPdf.puedeGenerarReporte,
         onPressed: () => _generarReporte(context, vmPdf),
       ),
     );
