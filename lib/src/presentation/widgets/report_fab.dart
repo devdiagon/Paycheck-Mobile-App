@@ -15,7 +15,7 @@ class ReportFab extends StatelessWidget {
   Widget build(BuildContext context) {
     return FloatingActionButton(
       onPressed: enabled ? onPressed : null,
-      backgroundColor: enabled ? SaintColors.dark_blue : Colors.grey,
+      backgroundColor: enabled ? SaintColors.primary : Colors.grey,
       child: Icon(
         Icons.picture_as_pdf,
         color: enabled ? Colors.white : Colors.black,

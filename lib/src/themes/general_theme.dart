@@ -27,13 +27,13 @@ ThemeData getGeneralTheme(Brightness brightness) {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     ),
     dividerTheme: const DividerThemeData(
-      color: TerracottaColors.darkCharcoal,
+      color: SaintColors.contrast,
       thickness: 1.0,
       space: 16.0,
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: colorScheme.surface,
-      contentTextStyle: const TextStyle(color: TerracottaColors.darkCharcoal),
+      contentTextStyle: const TextStyle(color: SaintColors.contrast),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       behavior: SnackBarBehavior.floating,
       elevation: 4.0,

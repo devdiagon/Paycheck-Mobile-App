@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'color_schema.dart';
 
 Color getBackgroundColor() {
-  return SaintColors.light;
+  return SaintColors.background;
 }
 
 Color getSurfaceColor() {
-  return TerracottaColors.peach;
+  return SaintColors.surface;
 }
