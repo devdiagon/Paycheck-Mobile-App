@@ -1,4 +1,4 @@
-import 'package:modelview/src/domain/entities/resultado_operario.dart';
+import 'resultado_operario.dart';
 
 class Operario {
   final String id;

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../viewmodels/reporte_viewmodel.dart';
 import '../viewmodels/operario_viewmodel.dart';
 import '../routes/app_routes.dart';
-import '../widgets/error_mesage.dart';
+import '../widgets/operarios_list.dart';
+import '../widgets/report_fab.dart';
+import '../widgets/operario_form.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,43 +21,71 @@ class _HomePageState extends State<HomePage> {
   String _errMsg = "";
 
   void _crearOperario(BuildContext context) {
-    setState(() {
-      _errMsg = "";
-    });
+    // Quitar mensaje de error
+    setState(() => _errMsg = "");
 
+    // Obtener nombre y sueldo
     final nombre = _nombreController.text.trim();
     final sueldo = double.tryParse(_sueldoController.text);
 
+    // Revisar que el nombre sea válido
     if (nombre.isEmpty) {
       setState(() => _errMsg = 'Ingrese el nombre del operario');
       return;
     }
+
+    // Revisar que el sueldo sea válido
     if (sueldo == null || sueldo <= 0){
       setState(() => _errMsg = 'Ingrese un sueldo válido');
       return;
     }
 
-    final vm = Provider.of<OperarioViewModel>(context, listen: false);
-    final op = vm.crearOperario(
+    // Datos válidos: CHECK
+    // Crear un nuevo operario
+    final vmOp = Provider.of<OperarioViewModel>(context, listen: false);
+    final op = vmOp.crearOperario(
         nombre: nombre,
         sueldo: sueldo,
         antiguedad: _selectedYear
     );
 
-    // Limpiar formulario
+    // Colocar los controles y datos a default
+    _limpiarFormulario();
+
+    // Habilitar el botón de PDF cuando se ha agregado al menos un operario
+    final vmPdf = Provider.of<ReporteViewModel>(context, listen: false);
+    vmPdf.actualizarPuedeGenerar(vmOp.operarios.isNotEmpty);
+
+    // Pasar el ID del operario y los datos calculados a la pantalla de resultado
+    Navigator.pushNamed(context, AppRoutes.resultado, arguments: op.id);
+  }
+
+  void _limpiarFormulario() {
     _nombreController.clear();
     _sueldoController.clear();
     _errMsg = "";
-    setState(() { _selectedYear = 1; });
+    setState(() {
+      _selectedYear = 1;
+      _errMsg = "";
+    });
+  }
 
+  Future<void> _generarReporte(BuildContext context, ReporteViewModel vmPdf) async {
+    // Obtener operarios registrados
+    final vmOp = Provider.of<OperarioViewModel>(context, listen: false);
+    await vmPdf.generarReporte(vmOp.operarios);
 
-    // CORRECTO: Pasar el ID del operario
-    Navigator.pushNamed(context, AppRoutes.resultado, arguments: op.id);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("PDF generado")),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = Provider.of<OperarioViewModel>(context);
+    final vmOp = Provider.of<OperarioViewModel>(context);
+    final vmPdf = context.watch<ReporteViewModel>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Gestión de Operarios')),
@@ -64,74 +95,32 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Formulario crear operario
-            TextField(
-              controller: _nombreController,
-              decoration: const InputDecoration(labelText: 'Nombre del operario', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 8),
-
-            TextField(
-              controller: _sueldoController,
-              decoration: const InputDecoration(labelText: 'Sueldo inicial', border: OutlineInputBorder(), prefixIcon: Icon(Icons.attach_money)),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 8),
-            ErrorMessage(errorText: _errMsg,),
-            const SizedBox(height: 8),
-
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Antigüedad (años): $_selectedYear',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                Slider(
-                  value: _selectedYear.toDouble(),
-                  min: 1,
-                  max: 10,
-                  divisions: 9,
-                  label: '$_selectedYear',
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedYear = value.toInt();
-                    });
-                  },
-                ),
-              ],
-            ),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(onPressed: () => _crearOperario(context), child: const Text('Crear operario')),
+            OperarioForm(
+              nombreController: _nombreController,
+              sueldoController: _sueldoController,
+              selectedYear: _selectedYear,
+              errorMsg: _errMsg,
+              onYearChanged: (value) => setState(() => _selectedYear = value),
+              onCrearOperario: () => _crearOperario(context),
             ),
 
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),
+
             const Text('Operarios disponibles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
 
             // Lista de operarios
             Expanded(
-              child: vm.operarios.isEmpty
-                  ? const Center(child: Text('No hay operarios aún'))
-                  : ListView.builder(
-                itemCount: vm.operarios.length,
-                itemBuilder: (context, index) {
-                  final op = vm.operarios[index];
-                  final inicial = (op.nombre.isNotEmpty) ? op.nombre[0].toUpperCase() : '?';
-                  return ListTile(
-                    leading: CircleAvatar(child: Text(inicial)),
-                    title: Text(op.nombre),
-                    subtitle: Text('Sueldo: \$${op.sueldo.toStringAsFixed(2)} • Antigüedad: ${op.antiguedad} años'),
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.resultado, arguments: op.id),
-                  );
-                },
-              ),
+              child: OperariosList(operarios: vmOp.operarios),
             ),
           ],
         ),
+      ),
+      floatingActionButton: ReportFab(
+        enabled: vmPdf.puedeGenerarReporte,
+        onPressed: () => _generarReporte(context, vmPdf),
       ),
     );
   }

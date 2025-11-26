@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:modelview/src/themes/general_theme.dart';
 import 'package:provider/provider.dart';
 
-import 'package:modelview/src/domain/usecases/calcular_aumento.dart';
+import 'src/themes/general_theme.dart';
+import 'src/presentation/viewmodels/reporte_viewmodel.dart';
 import 'src/presentation/viewmodels/operario_viewmodel.dart';
+import 'src/domain/usecases/calcular_aumento.dart';
+import 'src/domain/usecases/generar_pdf.dart';
 import 'src/presentation/routes/app_routes.dart';
 
 void main() {
@@ -15,8 +17,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => OperarioViewModel(CalcularAumento()),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => OperarioViewModel(CalcularAumento()),
+        ),
+        
+        ChangeNotifierProvider(
+            create: (context) => ReporteViewModel(GenerarPdf()),
+        ),
+      ],
+
       child: MaterialApp(
         title: 'Aumento Operario',
         debugShowCheckedModeBanner: false,
